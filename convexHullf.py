@@ -13,18 +13,12 @@ from pymol.cgo import *
 import time
 from Bio.PDB import *
 
+# Based on algorithm outlined in the quickhull Python module
 def qdome2d(vertices, base, normal, precision=0.0001):
-    """Build a convex dome from C{vertices} on top of the two C{base} vertices,
-    in the plane with normal C{normal}. This is a helper function for
-    L{qhull2d}, and should usually not be called directly.
-
-    :param vertices: The vertices to construct the dome from.
-    :param base: Two vertices that serve as a base for the dome.
-    :param normal: Orientation of the projection plane used for calculating
-        distances.
-    :param precision: Distance used to decide whether points lie outside of
-        the hull or not.
-    :return: A list of vertices that make up a fan of the dome.
+    """
+    Builds a convex hull on top of two base vertices with specified normal.
+    Note that this is a helper function for qhull2d.
+    Returns a list of vertices that make up a fan of the dome.
     """
 
     vert0, vert1 = base
@@ -47,17 +41,9 @@ def qdome2d(vertices, base, normal, precision=0.0001):
 
 
 def qhull2d(vertices, normal, precision=0.0001):
-    """Simple implementation of the 2d quickhull algorithm in 3 dimensions for
-    vertices viewed from the direction of C{normal}.
-    Returns a fan of vertices that make up the surface. Called by
-    L{qhull3d} to convexify coplanar vertices.
-
-    :param vertices: The vertices to construct the hull from.
-    :param normal: Orientation of the projection plane used for calculating
-        distances.
-    :param precision: Distance used to decide whether points lie outside of
-        the hull or not.
-    :return: A list of vertices that make up a fan of extreme points.
+    """
+    Implements the 2D quickhull algorithm in 3D for vertices viewed in the direction of the normal.
+    Returns a fan of vertices that make up this surface (list of extreme points).
     """
     base = basesimplex3d(vertices, precision)
     if len(base) >= 2:
@@ -69,23 +55,11 @@ def qhull2d(vertices, normal, precision=0.0001):
 
 
 def basesimplex3d(vertices, precision=0.0001):
-    """Find four extreme points, to be used as a starting base for the
-    quick hull algorithm L{qhull3d}.
-
-    The algorithm tries to find four points that are
-    as far apart as possible, because that speeds up the quick hull
-    algorithm. The vertices are ordered so their signed volume is positive.
-
-    If the volume zero up to C{precision} then only three vertices are
-    returned. If the vertices are colinear up to C{precision} then only two
-    vertices are returned. Finally, if the vertices are equal up to C{precision}
-    then just one vertex is returned.
-
-    :param vertices: The vertices to construct extreme points from.
-    :param precision: Distance used to decide whether points coincide,
-        are colinear, or coplanar.
-    :return: A list of one, two, three, or four vertices, depending on the
-        the configuration of the vertices.
+    """
+    Finds the four extreme points, which are to be used as 
+    a starting base for the quick hull algorithm.
+    Ideally, these four points should be as far apart as possible to speed up
+    the quickhull algorithm.
     """
     # sort axes by their extent in vertices
     extents = sorted(range(3),
@@ -125,20 +99,11 @@ def basesimplex3d(vertices, precision=0.0001):
 
 
 def qhull3d(vertices, precision=0.0001, verbose=False):
-    """Return the triangles making up the convex hull of C{vertices}.
-    Considers distances less than C{precision} to be zero (useful to simplify
-    the hull of a complex mesh, at the expense of exactness of the hull).
-
-    :param vertices: The vertices to find the hull of.
-    :param precision: Distance used to decide whether points lie outside of
-        the hull or not. Larger numbers mean fewer triangles, but some vertices
-        may then end up outside the hull, at a distance of no more than
-        C{precision}.
-    :param verbose: Print information about what the algorithm is doing. Only
-        useful for debugging.
-    :return: A list cointaining the extreme points of C{vertices}, and
-        a list containing the triangles that connect
-        all extreme points.
+    """
+    Returns the triangles that make up the convex hull of the vertices.
+    Distances less than the specified precision are considered to be 0 to simplify
+    hulls of complex meshes. Returns a list containing the extreme points and a list
+    containing the triangular faces of the convex hull.
     """
     # find a simplex to start from
     hull_vertices = basesimplex3d(vertices, precision)
